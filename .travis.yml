@@ -1,0 +1,36 @@
+branches:
+  only:
+    - master
+    - development
+
+language: node_js
+node_js:
+  - 13
+
+services:
+  - docker
+
+# Pre-testing installs
+install:
+  - echo "-"
+
+# Scripts to be run such as tests
+before_script:
+  - echo "-"
+
+script:
+  - docker build -t udagram-reverseproxy:latest -f reverseproxy/Dockerfile reverseproxy/
+  - docker tag udagram-reverseproxy:latest mileidymaria/udagram-reverseproxy:latest
+  - docker build -t udagram-frontend:latest -f udagram-frontend/Dockerfile udagram-frontend/
+  - docker tag udagram-frontend:latest mileidymaria/udagram-frontend:latest
+  - docker build -t udagram-api-user:latest -f udagram-api/api-user/Dockerfile udagram-api/api-user/
+  - docker tag udagram-api-user:latest mileidymaria/udagram-api-user:latest
+  - docker build -t udagram-api-feed:latest -f udagram-api/api-feed/Dockerfile udagram-api/api-feed/
+  - docker tag udagram-api-feed:latest mileidymaria/udagram-api-feed:latest
+
+after_success:
+  - echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+  - docker push  mileidymaria/udagram-reverseproxy:latest
+  - docker push  mileidymaria/udagram-frontend:latest
+  - docker push  mileidymaria/udagram-api-user:latest
+  - docker push  mileidymaria/udagram-api-feed:latest
